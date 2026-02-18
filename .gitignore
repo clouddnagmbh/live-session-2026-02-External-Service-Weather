@@ -1,0 +1,5 @@
+node_modules
+.env
+db.sqlite
+eslint.config.mjs
+.DS_Store
