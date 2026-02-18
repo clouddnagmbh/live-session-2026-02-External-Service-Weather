@@ -1,0 +1,29 @@
+{
+  "name": "ConsumingExternalServices-Weather",
+  "version": "1.0.0",
+  "description": "A simple CAP project.",
+  "dependencies": {
+    "@sap-cloud-sdk/http-client": "^4.4.0",
+    "@sap-cloud-sdk/resilience": "^4.4.0",
+    "@sap/cds": "^9",
+    "express": "^4"
+  },
+  "devDependencies": {
+    "@cap-js/sqlite": "^2"
+  },
+  "scripts": {
+    "start": "cds-serve"
+  },
+  "private": true,
+  "cds": {
+    "requires": {
+      "weatherservice": {
+        "kind": "rest",
+        "credentials": {
+          "url": "https://api.openweathermap.org",
+          "requestTimeout": 30000
+        }
+      }
+    }
+  }
+}
