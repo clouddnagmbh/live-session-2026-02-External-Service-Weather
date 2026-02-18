@@ -1,121 +1,122 @@
-# 🌦️ Consuming External Services – Weather (SAP CAP)
+# 🌦️ 02 – Consuming REST Service
 
-This repository is structured as a step-by-step workshop demonstrating how to consume an external REST service [OpenWeatherMap](https://openweathermap.org/api) within an SAP Cloud Application Programming Model (CAP) application.
+This branch extends the initial CAP project by integrating an external REST service (OpenWeatherMap) and implementing a custom OData action.
 
-Each branch represents a dedicated stage of the development process.
-The `main` branch contains the final, completed version of the application.
+In this step, we connect CAP to OpenWeatherMap via `cds.requires` and implement an action handler that:
 
-The project shows how to:
-- Define a CAP data model
-- Expose an OData V4 service
-- Consume an external REST API
-- Transform and return external data
-- Seed local sample data
-- Implement and execute custom actions
+1. Reads the stored coordinates for a city from the database  
+2. Calls the OpenWeatherMap REST API using those coordinates  
+3. Updates the temperature of the city in the local database  
+4. Returns the current temperature as the action result  
 
----
-
-## 🚀 Step-by-Step Workshop Branches
-
-Below is an overview of the branches and their focus areas:
+⚠️ In this branch, we focus purely on configuration and implementation.  
+The application is **not executed yet**. Runtime and testing will follow in branch 03.
 
 ---
 
-* [**01 - Initial Setup**](https://github.com/clouddnagmbh/live-session-2026-02-external-service-weather/tree/01-Initial-Setup)
+## 🎯 Objectives of This Step
 
-  * **Focus:**
-      - Basic CAP project structure
-      - Defining the domain model in `db/schema.cds`
-      - Creating the OData service definition in `srv/service.cds`
-
----
-
-* [**02 - Consuming REST Service**](https://github.com/clouddnagmbh/live-session-2026-02-external-service-weather/tree/02-Consuming-REST-Service)
-
-  * **Focus:**
-      - Integrating an external REST API (OpenWeatherMap)
-      - Implementing custom service logic in `srv/service.js`
-      - Calling the external API using Node.js
-      - Mapping external JSON response to CAP entities
-      - Returning live weather data via OData
-   
----
-
-* [**03 - Sample Data and Action Execution**](https://github.com/clouddnagmbh/live-session-2026-02-external-service-weather/tree/03-Sample-Data-and-Action-Execution)
-
-  * **Focus:**
-      - Adding CSV-based sample data in `db/data`
-      - Persisting entities locally
-      - Implementing custom OData actions
-      - Executing actions via OData endpoints
-      - Combining local persistence with external weather data
-   
----
-
-## 🧩 Project Architecture Overview
-
-The final application (main branch) consists of:
-- **db/** → CDS data model & sample data
-- **srv/** → Service definition & business logic
-- **External REST Integration** → OpenWeatherMap API
-- **SQLite (in-memory)** for local development
-
-High-level flow:
-1. Client calls OData endpoint
-2. CAP service handler executes custom logic
-3. External weather API is called
-4. Response is transformed
-5. Result is returned via OData
+- Configure an external REST service in CAP (`cds.requires`)
+- Consume OpenWeatherMap from within a CAP service handler
+- Implement a custom OData action: `updateTemperature(city)`
+- Update local persistence based on external API data
+- Prepare the project for execution in the next branch
 
 ---
 
-## ▶️ Running the Final Application
+## 🗂 Relevant Files
 
-```bash
-npm install
-cds watch
+```
+.
+├── db/
+│   └── schema.cds
+├── srv/
+│   ├── service.cds
+│   └── sensorData.js
+└── package.json
 ```
 
-The service will be available at:
-`http://localhost:4004/odata/v4/sensor-data`
+- `package.json` → REST service configuration (`weatherservice`)
+- `srv/service.cds` → OData service + action definition
+- `srv/sensorData.js` → action implementation (REST call + DB update)
+- `db/schema.cds` → domain model (incl. coordinates + temperature fields)
 
 ---
 
-## 🧪 Example Use Case
+## 🌐 External Service Configuration
 
-The application allows you to:
-- Manage locations and related entities
-- Fetch live weather data for a location
-- Execute custom actions exposed via OData
-- Work with seeded sample data locally
+In `package.json`, the OpenWeatherMap API is configured using `cds.requires`.
 
----
+Conceptually:
 
-## 🎯 Learning Objectives
+- Define a required service (`weatherservice`)
+- Set `kind: "rest"`
+- Provide the base URL of the OpenWeatherMap API
+- Add required headers (API key)
 
-After completing all branches, you will understand:
-- How to structure a CAP project
-- How to consume external REST service in CAP
-- How to implement custom service handlers
-- How to combine local persistence with external APIs
-- How to expose actions in OData V4
+This allows CAP to treat the external REST API like a service connection.
 
----
-
-## 🛠 Technologies Used
-
-- SAP Cloud Application Programming Model (CAP)
-- Node.js
-- OData V4
-- SQLite (development)
-- OpenWeatherMap REST API
+At this stage:
+- The configuration exists
+- The handler logic is implemented
+- No runtime execution is performed yet
 
 ---
 
-## 🔀 How to Use These Branches
+## ⚙️ Action Definition
 
-You can explore a specific step locally by checking out the branch:
-`git checkout 01-Initial-Setup`
+In `srv/service.cds`, a custom action is defined:
 
-Or start directly with the completed implementation:
-`git checkout main`
+```
+action updateTemperature(city: String) returns Decimal;
+```
+
+This action:
+
+- Accepts a city name
+- Triggers the REST call
+- Updates the temperature in the `Location` entity
+- Returns the current temperature
+
+The action is defined structurally but will be executed in branch 03.
+
+---
+
+## 🧠 Action Implementation
+
+In `srv/sensorData.js`, the logic is implemented.
+
+High-level flow:
+
+1. Retrieve the `Location` by city
+2. Extract longitude and latitude
+3. Call OpenWeatherMap via `weatherservice`
+4. Read `main.temp` from the response
+5. Update the `Location.temperature` field
+6. Return the temperature
+
+This is where CAP connects local persistence with external data.
+
+---
+
+## 🔄 Runtime Flow (Conceptual)
+
+Once executed (in the next branch), the process will look like this:
+
+Client → OData Action → CAP Handler → OpenWeatherMap REST API  
+→ CAP updates local DB → Response returned to client
+
+---
+
+## 🧠 What You Learned in This Branch
+
+- How to configure external REST services in CAP
+- How to use `cds.connect.to()` for REST integration
+- How to implement custom OData actions
+- How to combine external API data with local persistence
+- How to prepare service logic before runtime execution
+
+---
+
+This branch prepares the integration layer.  
+In the next step (03), we will add sample data and execute the application including action calls. 🌦️
